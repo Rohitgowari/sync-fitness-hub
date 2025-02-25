@@ -1,53 +1,117 @@
 
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Plus, Save } from "lucide-react";
 import { useState } from "react";
 
-export function CustomMeal() {
-  const [ingredients, setIngredients] = useState([{ name: '', quantity: '', unit: '' }]);
+interface Ingredient {
+  name: string;
+  quantity: string;
+  unit: string;
+}
 
-  const addIngredient = () => {
-    setIngredients([...ingredients, { name: '', quantity: '', unit: '' }]);
+export function CustomMeal() {
+  const [mealName, setMealName] = useState("");
+  const [ingredients, setIngredients] = useState<Ingredient[]>([
+    { name: "", quantity: "", unit: "g" },
+  ]);
+  const [calculatedNutrition, setCalculatedNutrition] = useState<boolean>(false);
+
+  const handleAddIngredient = () => {
+    setIngredients([...ingredients, { name: "", quantity: "", unit: "g" }]);
+  };
+
+  const handleIngredientChange = (index: number, field: keyof Ingredient, value: string) => {
+    const updatedIngredients = ingredients.map((ingredient, i) => {
+      if (i === index) {
+        return { ...ingredient, [field]: value };
+      }
+      return ingredient;
+    });
+    setIngredients(updatedIngredients);
+  };
+
+  const handleCalculate = () => {
+    setCalculatedNutrition(true);
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Add Custom Meal</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form className="space-y-6">
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Add Custom Meal</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="font-medium">Meal Name</label>
-            <Input placeholder="Enter meal name" />
+            <label htmlFor="mealName">Meal Name</label>
+            <Input
+              id="mealName"
+              value={mealName}
+              onChange={(e) => setMealName(e.target.value)}
+              placeholder="Enter meal name"
+            />
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <label className="font-medium">Ingredients</label>
-              <Button type="button" variant="outline" size="sm" onClick={addIngredient}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Ingredient
-              </Button>
-            </div>
-
-            {ingredients.map((_, index) => (
-              <div key={index} className="grid grid-cols-3 gap-4">
-                <Input placeholder="Ingredient name" />
-                <Input placeholder="Quantity" type="number" />
-                <Input placeholder="Unit (g, ml, etc)" />
+            <label className="text-lg font-semibold">Ingredients</label>
+            {ingredients.map((ingredient, index) => (
+              <div key={index} className="grid gap-4 md:grid-cols-3">
+                <Input
+                  placeholder="Ingredient name"
+                  value={ingredient.name}
+                  onChange={(e) => handleIngredientChange(index, "name", e.target.value)}
+                />
+                <Input
+                  placeholder="Quantity"
+                  type="number"
+                  value={ingredient.quantity}
+                  onChange={(e) => handleIngredientChange(index, "quantity", e.target.value)}
+                />
+                <Input
+                  placeholder="Unit (g, ml, etc.)"
+                  value={ingredient.unit}
+                  onChange={(e) => handleIngredientChange(index, "unit", e.target.value)}
+                />
               </div>
             ))}
+            <Button variant="outline" onClick={handleAddIngredient} className="w-full">
+              Add Another Ingredient
+            </Button>
           </div>
 
-          <Button className="w-full">
-            <Save className="mr-2 h-4 w-4" />
-            Save Meal
+          <Button onClick={handleCalculate} className="w-full">
+            Calculate Nutrition
           </Button>
-        </form>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {calculatedNutrition && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Nutritional Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Calories</p>
+                <p className="text-2xl font-bold">450</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Protein</p>
+                <p className="text-2xl font-bold">25g</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Carbs</p>
+                <p className="text-2xl font-bold">45g</p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Fat</p>
+                <p className="text-2xl font-bold">15g</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
